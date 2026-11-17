@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { CreateGoalDto } from './dto/create-goal.dto.js';
 
 @Injectable()
 export class GoalsService {
@@ -23,6 +24,17 @@ export class GoalsService {
     return this.goals.find((goal) => goal.id === id);
   }
   countGoals() {
-  return this.goals.length;
-}
+    return this.goals.length;
+  }
+  create(createGoalDto: CreateGoalDto) {
+    const newGoal = {
+      id: this.goals.length + 1,
+      ...createGoalDto,
+      completed: createGoalDto.completed ?? false,
+    };
+
+    this.goals.push(newGoal);
+
+    return newGoal;
+  }
 }

@@ -1,16 +1,41 @@
+// import { Module } from '@nestjs/common';
+// import { createObserveModule } from '@nestjs/observe';
+// import { AppController } from './app.controller.js';
+// import { AppService } from './app.service.js';
+// import { GoalsService } from './goals/goals.service.js';
+// import { GoalsController } from './goals/goals.controller.js';
+// import { GoalsModule } from './goals/goals.module.js';
+
+// export const { ObserveModule, ObserveInstrument } = createObserveModule();
+
+// @Module({
+//  imports: [GoalsModule],
+//   controllers: [AppController, GoalsController],
+//   providers: [AppService, GoalsService],
+// })
+// export class AppModule {}
+
+
+
 import { Module } from '@nestjs/common';
 import { createObserveModule } from '@nestjs/observe';
+
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
-import { GoalsService } from './goals/goals.service.js';
-import { GoalsController } from './goals/goals.controller.js';
 import { GoalsModule } from './goals/goals.module.js';
 
-export const { ObserveModule, ObserveInstrument } = createObserveModule();
+export const { ObserveModule, ObserveInstrument } =
+  createObserveModule();
 
 @Module({
- imports: [GoalsModule],
-  controllers: [AppController, GoalsController],
-  providers: [AppService, GoalsService],
+  imports: [
+    ObserveModule.forRoot({
+      enabled: false,
+      serviceId: 'devtrack-api',
+    }),
+    GoalsModule,
+  ],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}
