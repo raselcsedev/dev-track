@@ -18,8 +18,41 @@ export class GoalsService {
     },
   ];
 
-  findAll() {
-    return this.goals;
+  findAll(search?: string, completed?: string, page = 1, limit = 10) {
+    let filteredGoals = this.goals;
+
+    // Search
+    if (search) {
+      filteredGoals = filteredGoals.filter((goal) =>
+        goal.title.toLowerCase().includes(search.toLowerCase()),
+      );
+    }
+
+    // Filtering
+    if (completed !== undefined) {
+      const isCompleted = completed === 'true';
+
+      filteredGoals = filteredGoals.filter(
+        (goal) => goal.completed === isCompleted,
+      );
+    }
+
+    // Pagination
+    const total = filteredGoals.length;
+    const totalPages = Math.ceil(total / limit);
+    const skip = (page - 1) * limit;
+
+    const data = filteredGoals.slice(skip, skip + limit);
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages,
+      },
+    };
   }
 
   findOne(id: number) {
@@ -65,5 +98,15 @@ export class GoalsService {
       message: 'Goal deleted successfully',
       data: deletedGoal[0],
     };
+  }
+
+  search(search: string) {
+    if (!search) {
+      return this.goals;
+    }
+
+    return this.goals.filter((goal) =>
+      goal.title.toLowerCase().includes(search.toLowerCase()),
+    );
   }
 }

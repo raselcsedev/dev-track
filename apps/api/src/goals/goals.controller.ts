@@ -1,12 +1,13 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
+  Patch,
   Post,
   Put,
-  Patch,
-  Delete,
+  Query,
 } from '@nestjs/common';
 
 import { UpdateGoalDto } from './dto/update-goal.dto.js';
@@ -26,8 +27,18 @@ export class GoalsController {
 
   // GET /goals
   @Get()
-  findAll() {
-    return this.goalsService.findAll();
+  findAll(
+    @Query('search') search?: string,
+    @Query('completed') completed?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.goalsService.findAll(
+      search,
+      completed,
+      Number(page) || 1,
+      Number(limit) || 10,
+    );
   }
 
   // GET /goals/count
@@ -54,5 +65,9 @@ export class GoalsController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.goalsService.remove(Number(id));
+  }
+  @Get('search')
+  searchGoals(@Query('search') search: string) {
+    return this.goalsService.search(search);
   }
 }
