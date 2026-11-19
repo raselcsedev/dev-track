@@ -17,12 +17,14 @@
 
 
 
+
 import { Module } from '@nestjs/common';
 import { createObserveModule } from '@nestjs/observe';
 
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { GoalsModule } from './goals/goals.module.js';
+import { PrismaModule } from './prisma/prisma.module.js';
 
 export const { ObserveModule, ObserveInstrument } =
   createObserveModule();
@@ -33,9 +35,11 @@ export const { ObserveModule, ObserveInstrument } =
       enabled: false,
       serviceId: 'devtrack-api',
     }),
+    PrismaModule,
     GoalsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}
+

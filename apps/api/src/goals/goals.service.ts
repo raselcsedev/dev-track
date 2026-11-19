@@ -1,6 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateGoalDto } from './dto/create-goal.dto.js';
 import { UpdateGoalDto } from './dto/update-goal.dto.js';
+import { PrismaService } from '../prisma/prisma.service.js';
+import { Prisma } from '../generated/prisma/client.js';
 
 @Injectable()
 export class GoalsService {
@@ -17,32 +19,26 @@ export class GoalsService {
       completed: false,
     },
   ];
+  constructor(private readonly prisma: PrismaService) {}
 
-  findAll(search?: string, completed?: string, page = 1, limit = 10) {
-    let filteredGoals = this.goals;
+  async findAll(search?: string, completed?: string, page = 1, limit = 10) {
+    const where = {
+      ...(search ? { title: { contains: search } } : {}),
+      ...(completed !== undefined ? { completed: completed === 'true' } : {}),
+    };
 
-    // Search
-    if (search) {
-      filteredGoals = filteredGoals.filter((goal) =>
-        goal.title.toLowerCase().includes(search.toLowerCase()),
-      );
-    }
+    const [data, total] = await Promise.all([
+      this.prisma.goal.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: {
+          createdAt: 'desc',
+        },
+      }),
 
-    // Filtering
-    if (completed !== undefined) {
-      const isCompleted = completed === 'true';
-
-      filteredGoals = filteredGoals.filter(
-        (goal) => goal.completed === isCompleted,
-      );
-    }
-
-    // Pagination
-    const total = filteredGoals.length;
-    const totalPages = Math.ceil(total / limit);
-    const skip = (page - 1) * limit;
-
-    const data = filteredGoals.slice(skip, skip + limit);
+      this.prisma.goal.count({ where }),
+    ]);
 
     return {
       data,
@@ -50,54 +46,73 @@ export class GoalsService {
         total,
         page,
         limit,
-        totalPages,
+        totalPages: Math.ceil(total / limit),
       },
     };
   }
 
-  findOne(id: number) {
-    return this.goals.find((goal) => goal.id === id);
-  }
-  countGoals() {
-    return this.goals.length;
-  }
-  create(createGoalDto: CreateGoalDto) {
-    const newGoal = {
-      id: this.nextId++,
-      ...createGoalDto,
-      completed: createGoalDto.completed ?? false,
-    };
-
-    this.goals.push(newGoal);
-
-    return newGoal;
-  }
-
-  update(id: number, updateGoalDto: UpdateGoalDto) {
-    const goal = this.findOne(id);
+  async findOne(id: number) {
+    const goal = await this.prisma.goal.findUnique({
+      where: { id },
+    });
 
     if (!goal) {
       throw new NotFoundException(`Goal with ID ${id} not found`);
     }
 
-    Object.assign(goal, updateGoalDto);
-
     return goal;
   }
+  async countGoals() {
+    return this.prisma.goal.count();
+  }
+  async create(createGoalDto: CreateGoalDto) {
+    return this.prisma.goal.create({
+      data: {
+        title: createGoalDto.title,
+        description: createGoalDto.description,
+        completed: createGoalDto.completed ?? false,
+      },
+    });
+  }
 
-  remove(id: number) {
-    const index = this.goals.findIndex((goal) => goal.id === id);
+  async update(id: number, updateGoalDto: UpdateGoalDto) {
+    try {
+      return await this.prisma.goal.update({
+        where: { id },
+        data: updateGoalDto,
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2025'
+      ) {
+        throw new NotFoundException(`Goal with ID ${id} not found`);
+      }
 
-    if (index === -1) {
-      throw new NotFoundException(`Goal with ID ${id} not found`);
+      throw error;
     }
+  }
 
-    const deletedGoal = this.goals.splice(index, 1);
+  async remove(id: number) {
+    try {
+      const deletedGoal = await this.prisma.goal.delete({
+        where: { id },
+      });
 
-    return {
-      message: 'Goal deleted successfully',
-      data: deletedGoal[0],
-    };
+      return {
+        message: 'Goal deleted successfully',
+        data: deletedGoal,
+      };
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2025'
+      ) {
+        throw new NotFoundException(`Goal with ID ${id} not found`);
+      }
+
+      throw error;
+    }
   }
 
   search(search: string) {
