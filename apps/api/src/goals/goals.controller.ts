@@ -9,6 +9,7 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 
 import { UpdateGoalDto } from './dto/update-goal.dto.js';
@@ -17,7 +18,10 @@ import { GoalsService } from './goals.service.js';
 import { CreateGoalDto } from './dto/create-goal.dto.js';
 import { PositiveIntPipe } from '../common/pipes/positive-int.pipe.js';
 
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
+
 @Controller('goals')
+@UseGuards(JwtAuthGuard)
 export class GoalsController {
   constructor(private readonly goalsService: GoalsService) {}
 
@@ -46,12 +50,12 @@ export class GoalsController {
 
   // GET /goals/:id
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe , PositiveIntPipe) id: number) {
+  findOne(@Param('id', ParseIntPipe, PositiveIntPipe) id: number) {
     return this.goalsService.findOne(id);
   }
   @Put(':id')
   update(
-    @Param('id', ParseIntPipe , PositiveIntPipe) id: number,
+    @Param('id', ParseIntPipe, PositiveIntPipe) id: number,
     @Body() updateGoalDto: UpdateGoalDto,
   ) {
     return this.goalsService.update(id, updateGoalDto);
@@ -59,14 +63,14 @@ export class GoalsController {
 
   @Patch(':id')
   updatePartial(
-    @Param('id', ParseIntPipe , PositiveIntPipe) id: number,
+    @Param('id', ParseIntPipe, PositiveIntPipe) id: number,
     @Body() updateGoalDto: UpdateGoalDto,
   ) {
     return this.goalsService.update(id, updateGoalDto);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe , PositiveIntPipe) id: number) {
+  remove(@Param('id', ParseIntPipe, PositiveIntPipe) id: number) {
     return this.goalsService.remove(id);
   }
 }

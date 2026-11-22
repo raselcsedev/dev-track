@@ -15,9 +15,6 @@
 // })
 // export class AppModule {}
 
-
-
-
 import { Module } from '@nestjs/common';
 import { createObserveModule } from '@nestjs/observe';
 
@@ -26,16 +23,19 @@ import { AppService } from './app.service.js';
 import { GoalsModule } from './goals/goals.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { AuthModule } from './auth/auth.module.js';
+import { ConfigModule } from '@nestjs/config';
 
-
-export const { ObserveModule, ObserveInstrument } =
-  createObserveModule();
+export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
 @Module({
   imports: [
     ObserveModule.forRoot({
       enabled: false,
       serviceId: 'devtrack-api',
+    }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
     }),
     PrismaModule,
     GoalsModule,
@@ -45,4 +45,3 @@ export const { ObserveModule, ObserveInstrument } =
   providers: [AppService],
 })
 export class AppModule {}
-
