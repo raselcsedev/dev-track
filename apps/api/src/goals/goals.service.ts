@@ -1,3 +1,4 @@
+
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateGoalDto } from './dto/create-goal.dto.js';
 import { UpdateGoalDto } from './dto/update-goal.dto.js';
@@ -6,11 +7,17 @@ import { Prisma } from '../generated/prisma/client.js';
 
 @Injectable()
 export class GoalsService {
-
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(search?: string, completed?: boolean, page = 1, limit = 10) {
+  async findAll(
+    userId: number,
+    search?: string,
+    completed?: boolean,
+    page = 1,
+    limit = 10,
+  ) {
     const where: Prisma.GoalWhereInput = {
+      userId,
       ...(search ? { title: { contains: search } } : {}),
       ...(completed !== undefined ? { completed } : {}),
     };
@@ -39,9 +46,12 @@ export class GoalsService {
     };
   }
 
-  async findOne(id: number) {
-    const goal = await this.prisma.goal.findUnique({
-      where: { id },
+  async findOne(userId: number, id: number) {
+    const goal = await this.prisma.goal.findFirst({
+      where: {
+        id,
+        userId,
+      },
     });
 
     if (!goal) {
@@ -50,56 +60,57 @@ export class GoalsService {
 
     return goal;
   }
-  async countGoals() {
-    return this.prisma.goal.count();
+
+  async countGoals(userId: number) {
+    return this.prisma.goal.count({
+      where: { userId },
+    });
   }
-  async create(createGoalDto: CreateGoalDto) {
+
+  async create(userId: number, createGoalDto: CreateGoalDto) {
     return this.prisma.goal.create({
       data: {
         title: createGoalDto.title,
         description: createGoalDto.description,
         completed: createGoalDto.completed ?? false,
+        userId,
       },
     });
   }
 
-  async update(id: number, updateGoalDto: UpdateGoalDto) {
-    try {
-      return await this.prisma.goal.update({
-        where: { id },
-        data: updateGoalDto,
-      });
-    } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2025'
-      ) {
-        throw new NotFoundException(`Goal with ID ${id} not found`);
-      }
+  async update(
+    userId: number,
+    id: number,
+    updateGoalDto: UpdateGoalDto,
+  ) {
+    const result = await this.prisma.goal.updateMany({
+      where: {
+        id,
+        userId,
+      },
+      data: updateGoalDto,
+    });
 
-      throw error;
+    if (result.count === 0) {
+      throw new NotFoundException(`Goal with ID ${id} not found`);
     }
+
+    return this.findOne(userId, id);
   }
 
-  async remove(id: number) {
-    try {
-      const deletedGoal = await this.prisma.goal.delete({
-        where: { id },
-      });
+  async remove(userId: number, id: number) {
+    const goal = await this.findOne(userId, id);
 
-      return {
-        message: 'Goal deleted successfully',
-        data: deletedGoal,
-      };
-    } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2025'
-      ) {
-        throw new NotFoundException(`Goal with ID ${id} not found`);
-      }
+    await this.prisma.goal.deleteMany({
+      where: {
+        id,
+        userId,
+      },
+    });
 
-      throw error;
-    }
+    return {
+      message: 'Goal deleted successfully',
+      data: goal,
+    };
   }
 }

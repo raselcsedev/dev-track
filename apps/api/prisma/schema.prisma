@@ -22,19 +22,26 @@ datasource db {
 }
 
 model Goal {
-  id          Int      @id @default(autoincrement())
+  id          Int     @id @default(autoincrement())
   title       String
   description String?
-  completed   Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  completed   Boolean @default(false)
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  password  String
+  id       Int    @id @default(autoincrement())
+  name     String
+  email    String @unique
+  password String
+
+  goals Goal[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

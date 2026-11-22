@@ -594,6 +594,7 @@ export const GoalScalarFieldEnum = {
   title: 'title',
   description: 'description',
   completed: 'completed',
+  userId: 'userId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
