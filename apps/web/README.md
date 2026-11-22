@@ -1,36 +1,129 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DevTrack Web
 
-## Getting Started
+The frontend application for **DevTrack**, built with Next.js, React, and TypeScript.
 
-First, run the development server:
+## Tech Stack
+
+- Next.js 16
+- React 19
+- TypeScript
+- Tailwind CSS 4
+- ESLint
+
+## Project Status
+
+🚧 Frontend development is in progress.
+
+## Features
+
+The frontend will gradually include:
+
+- User registration and login
+- Dashboard
+- Learning goals management
+- Daily task management
+- Project progress tracking
+- API integration
+- Search and filtering
+
+## Prerequisites
+
+- Node.js 24.15 or a compatible newer release
+- npm
+
+## Installation
+
+From the repository root:
+
+```bash
+npm install
+```
+
+## Environment Configuration
+
+Create `.env.local` inside `apps/web/` when configuring the API connection.
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3000
+```
+
+Use the appropriate API URL for your environment.
+
+Do not put private secrets in `NEXT_PUBLIC_` environment variables. These variables are exposed to the browser.
+
+## Run the Development Server
+
+From the repository root:
+
+```bash
+npm run dev:web
+```
+
+Or from `apps/web/`:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open the URL displayed in your terminal. Next.js uses port 3000 by default and selects another available port if necessary.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Build for Production
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+From the repository root:
 
-## Learn More
+```bash
+npm run build:web
+```
 
-To learn more about Next.js, take a look at the following resources:
+Or from `apps/web/`:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run build
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Start the production server:
 
-## Deploy on Vercel
+```bash
+npm run start
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Lint
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run lint
+```
+
+## Available Scripts
+
+| Command | Description |
+|---|---|
+| `npm run dev` | Start Next.js development server |
+| `npm run build` | Build the application |
+| `npm run start` | Start production server |
+| `npm run lint` | Run ESLint |
+
+## Backend Integration
+
+DevTrack uses a separate NestJS API.
+
+Backend base URL:
+
+```text
+http://localhost:3000
+```
+
+Configure the API URL using `NEXT_PUBLIC_API_URL` in `.env.local`.
+
+See [Backend Documentation](../api/README.md) for API endpoints and authentication details.
+
+## Related Documentation
+
+- [Main Project README](../../README.md)
+- [Backend README](../api/README.md)
+
+## Resources
+
+- [Next.js Documentation](https://nextjs.org/docs)
+- [React Documentation](https://react.dev/)
+- [TypeScript Documentation](https://www.typescriptlang.org/docs/)
+- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
