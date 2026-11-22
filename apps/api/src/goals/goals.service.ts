@@ -6,25 +6,13 @@ import { Prisma } from '../generated/prisma/client.js';
 
 @Injectable()
 export class GoalsService {
-  private nextId = 3;
-  private goals = [
-    {
-      id: 1,
-      title: 'Learn NestJS',
-      completed: false,
-    },
-    {
-      id: 2,
-      title: 'Build DevTrack API',
-      completed: false,
-    },
-  ];
+
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(search?: string, completed?: string, page = 1, limit = 10) {
-    const where = {
+  async findAll(search?: string, completed?: boolean, page = 1, limit = 10) {
+    const where: Prisma.GoalWhereInput = {
       ...(search ? { title: { contains: search } } : {}),
-      ...(completed !== undefined ? { completed: completed === 'true' } : {}),
+      ...(completed !== undefined ? { completed } : {}),
     };
 
     const [data, total] = await Promise.all([
@@ -113,15 +101,5 @@ export class GoalsService {
 
       throw error;
     }
-  }
-
-  search(search: string) {
-    if (!search) {
-      return this.goals;
-    }
-
-    return this.goals.filter((goal) =>
-      goal.title.toLowerCase().includes(search.toLowerCase()),
-    );
   }
 }
