@@ -10,10 +10,11 @@ import {
   Post,
   Put,
   Query,
-  Req,
   UseGuards,
 } from '@nestjs/common';
-import type { Request } from 'express';
+
+import { CurrentUser } from '../common/decorators/current-user.decorator.js';
+import type { AuthenticatedUser } from '../common/decorators/current-user.decorator.js';
 
 import { UpdateGoalDto } from './dto/update-goal.dto.js';
 import { GetGoalsQueryDto } from './dto/get-goals-query.dto.js';
@@ -21,13 +22,6 @@ import { GoalsService } from './goals.service.js';
 import { CreateGoalDto } from './dto/create-goal.dto.js';
 import { PositiveIntPipe } from '../common/pipes/positive-int.pipe.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
-
-interface AuthenticatedRequest extends Request {
-  user: {
-    userId: number;
-    email: string;
-  };
-}
 
 @Controller('goals')
 @UseGuards(JwtAuthGuard)
@@ -37,20 +31,20 @@ export class GoalsController {
   // POST /goals
   @Post()
   create(
-    @Req() req: AuthenticatedRequest,
+    @CurrentUser() user: AuthenticatedUser,
     @Body() createGoalDto: CreateGoalDto,
   ) {
-    return this.goalsService.create(req.user.userId, createGoalDto);
+    return this.goalsService.create(user.userId, createGoalDto);
   }
 
   // GET /goals
   @Get()
   findAll(
-    @Req() req: AuthenticatedRequest,
+    @CurrentUser() user: AuthenticatedUser,
     @Query() query: GetGoalsQueryDto,
   ) {
     return this.goalsService.findAll(
-      req.user.userId,
+      user.userId,
       query.search,
       query.completed,
       query.page,
@@ -60,53 +54,45 @@ export class GoalsController {
 
   // GET /goals/count
   @Get('count')
-  countGoals(@Req() req: AuthenticatedRequest) {
-    return this.goalsService.countGoals(req.user.userId);
+  countGoals(@CurrentUser() user: AuthenticatedUser) {
+    return this.goalsService.countGoals(user.userId);
   }
 
   // GET /goals/:id
   @Get(':id')
   findOne(
-    @Req() req: AuthenticatedRequest,
+    @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseIntPipe, PositiveIntPipe) id: number,
   ) {
-    return this.goalsService.findOne(req.user.userId, id);
+    return this.goalsService.findOne(user.userId, id);
   }
 
   // PUT /goals/:id
   @Put(':id')
   update(
-    @Req() req: AuthenticatedRequest,
+    @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseIntPipe, PositiveIntPipe) id: number,
     @Body() updateGoalDto: UpdateGoalDto,
   ) {
-    return this.goalsService.update(
-      req.user.userId,
-      id,
-      updateGoalDto,
-    );
+    return this.goalsService.update(user.userId, id, updateGoalDto);
   }
 
   // PATCH /goals/:id
   @Patch(':id')
   updatePartial(
-    @Req() req: AuthenticatedRequest,
+    @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseIntPipe, PositiveIntPipe) id: number,
     @Body() updateGoalDto: UpdateGoalDto,
   ) {
-    return this.goalsService.update(
-      req.user.userId,
-      id,
-      updateGoalDto,
-    );
+    return this.goalsService.update(user.userId, id, updateGoalDto);
   }
 
   // DELETE /goals/:id
   @Delete(':id')
   remove(
-    @Req() req: AuthenticatedRequest,
+    @CurrentUser() user: AuthenticatedUser,
     @Param('id', ParseIntPipe, PositiveIntPipe) id: number,
   ) {
-    return this.goalsService.remove(req.user.userId, id);
+    return this.goalsService.remove(user.userId, id);
   }
 }
