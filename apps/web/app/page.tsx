@@ -1,69 +1,106 @@
-import Image from "next/image";
+
+import Link from "next/link";
+
+const features = [
+  {
+    title: "Learning Goals",
+    description:
+      "Create and manage your personal learning goals.",
+    icon: "🎯",
+  },
+  {
+    title: "Daily Progress",
+    description:
+      "Track your daily tasks and monitor your progress.",
+    icon: "📅",
+  },
+  {
+    title: "Project Tracking",
+    description:
+      "Organize projects and keep track of your milestones.",
+    icon: "🚀",
+  },
+];
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <main className="min-h-screen bg-slate-950 text-white">
+      <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-6">
+        <Link href="/" className="text-2xl font-bold tracking-tight">
+          DevTrack<span className="text-blue-500">.</span>
+        </Link>
+
+        <div className="flex items-center gap-4">
+          <Link
+            href="/login"
+            className="text-sm font-medium text-slate-300 transition hover:text-white"
           >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            Login
+          </Link>
+
+          <Link
+            href="/register"
+            className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold transition hover:bg-blue-500"
           >
-            Documentation
-          </a>
+            Get Started
+          </Link>
         </div>
-      </main>
-    </div>
+      </nav>
+
+      <section className="mx-auto flex max-w-7xl flex-col items-center px-6 py-24 text-center">
+        <span className="mb-6 rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm text-blue-400">
+          Personal Learning & Project Tracker
+        </span>
+
+        <h1 className="max-w-4xl text-4xl font-bold leading-tight tracking-tight sm:text-6xl">
+          Turn Your Learning Journey Into{" "}
+          <span className="text-blue-500">Real Progress.</span>
+        </h1>
+
+        <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-400">
+          Set learning goals, manage daily tasks, track projects,
+          and build consistent habits with DevTrack.
+        </p>
+
+        <div className="mt-10 flex flex-col gap-4 sm:flex-row">
+          <Link
+            href="/register"
+            className="rounded-lg bg-blue-600 px-8 py-3 font-semibold transition hover:bg-blue-500"
+          >
+            Start Tracking
+          </Link>
+
+          <Link
+            href="/login"
+            className="rounded-lg border border-slate-700 px-8 py-3 font-semibold transition hover:border-slate-500 hover:bg-slate-900"
+          >
+            Sign In
+          </Link>
+        </div>
+      </section>
+
+      <section className="mx-auto grid max-w-7xl gap-6 px-6 pb-24 md:grid-cols-3">
+        {features.map((feature) => (
+          <article
+            key={feature.title}
+            className="rounded-2xl border border-slate-800 bg-slate-900 p-8 transition hover:border-blue-500/50"
+          >
+            <div className="mb-5 text-4xl">{feature.icon}</div>
+
+            <h2 className="text-xl font-semibold">
+              {feature.title}
+            </h2>
+
+            <p className="mt-3 leading-7 text-slate-400">
+              {feature.description}
+            </p>
+          </article>
+        ))}
+      </section>
+
+      <footer className="border-t border-slate-800 px-6 py-8 text-center text-sm text-slate-500">
+        © 2026 DevTrack. Built for continuous learning.
+      </footer>
+    </main>
   );
 }
