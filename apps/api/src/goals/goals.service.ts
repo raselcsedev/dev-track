@@ -1,5 +1,4 @@
-
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { CreateGoalDto } from './dto/create-goal.dto.js';
 import { UpdateGoalDto } from './dto/update-goal.dto.js';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -7,6 +6,7 @@ import { Prisma } from '../generated/prisma/client.js';
 
 @Injectable()
 export class GoalsService {
+  private readonly logger = new Logger(GoalsService.name);
   constructor(private readonly prisma: PrismaService) {}
 
   async findAll(
@@ -68,7 +68,7 @@ export class GoalsService {
   }
 
   async create(userId: number, createGoalDto: CreateGoalDto) {
-    return this.prisma.goal.create({
+    const goal = await this.prisma.goal.create({
       data: {
         title: createGoalDto.title,
         description: createGoalDto.description,
@@ -76,41 +76,51 @@ export class GoalsService {
         userId,
       },
     });
+
+    this.logger.log(`Goal created successfully. Goal ID: ${goal.id}`);
+
+    return goal;
   }
 
-  async update(
-    userId: number,
-    id: number,
-    updateGoalDto: UpdateGoalDto,
-  ) {
-    const result = await this.prisma.goal.updateMany({
-      where: {
-        id,
-        userId,
-      },
-      data: updateGoalDto,
-    });
+async update(
+  userId: number,
+  id: number,
+  updateGoalDto: UpdateGoalDto,
+) {
+  const result = await this.prisma.goal.updateMany({
+    where: {
+      id,
+      userId,
+    },
+    data: updateGoalDto,
+  });
 
-    if (result.count === 0) {
-      throw new NotFoundException(`Goal with ID ${id} not found`);
-    }
-
-    return this.findOne(userId, id);
+  if (result.count === 0) {
+    throw new NotFoundException(`Goal with ID ${id} not found`);
   }
 
-  async remove(userId: number, id: number) {
-    const goal = await this.findOne(userId, id);
+  const updatedGoal = await this.findOne(userId, id);
 
-    await this.prisma.goal.deleteMany({
-      where: {
-        id,
-        userId,
-      },
-    });
+  this.logger.log(`Goal updated successfully. Goal ID: ${id}`);
 
-    return {
-      message: 'Goal deleted successfully',
-      data: goal,
-    };
-  }
+  return updatedGoal;
+}
+
+ async remove(userId: number, id: number) {
+  const goal = await this.findOne(userId, id);
+
+  await this.prisma.goal.deleteMany({
+    where: {
+      id,
+      userId,
+    },
+  });
+
+  this.logger.log(`Goal deleted successfully. Goal ID: ${id}`);
+
+  return {
+    message: 'Goal deleted successfully',
+    data: goal,
+  };
+}
 }
