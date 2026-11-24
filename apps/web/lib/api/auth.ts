@@ -39,6 +39,11 @@ export async function login(payload: LoginPayload): Promise<LoginResponse> {
     body: JSON.stringify(payload),
   });
 }
+export async function getMe(): Promise<AuthUser> {
+  return apiRequest<AuthUser>("/auth/me", {
+    method: "GET",
+  });
+}
 export async function logout(): Promise<{ message: string }> {
   return apiRequest<{ message: string }>("/auth/logout", {
     method: "POST",
