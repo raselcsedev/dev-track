@@ -1,17 +1,21 @@
-
 import Link from "next/link";
+import LogoutButton from "@/app/components/layout/logout-button";
 
 export default function DashboardPage() {
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-12 text-white">
       <div className="mx-auto max-w-5xl">
-        <h1 className="text-3xl font-bold">
-          Welcome to DevTrack
-        </h1>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Welcome to DevTrack</h1>
 
-        <p className="mt-3 text-slate-400">
-          Your personal learning and project tracker.
-        </p>
+            <p className="mt-3 text-slate-400">
+              Your personal learning and project tracker.
+            </p>
+          </div>
+
+          <LogoutButton />
+        </div>
 
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           <Link

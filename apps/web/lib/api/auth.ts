@@ -1,4 +1,3 @@
-
 import { apiRequest } from "./client";
 
 export interface RegisterPayload {
@@ -34,11 +33,14 @@ export async function register(
   });
 }
 
-export async function login(
-  payload: LoginPayload,
-): Promise<LoginResponse> {
+export async function login(payload: LoginPayload): Promise<LoginResponse> {
   return apiRequest<LoginResponse>("/auth/login", {
     method: "POST",
     body: JSON.stringify(payload),
+  });
+}
+export async function logout(): Promise<{ message: string }> {
+  return apiRequest<{ message: string }>("/auth/logout", {
+    method: "POST",
   });
 }

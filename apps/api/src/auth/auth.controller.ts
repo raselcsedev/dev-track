@@ -1,10 +1,4 @@
-
-import {
-  Body,
-  Controller,
-  Post,
-  Res,
-} from '@nestjs/common';
+import { Body, Controller, Post, Res } from '@nestjs/common';
 import type { Response } from 'express';
 
 import { AuthService } from './auth.service.js';
@@ -38,6 +32,20 @@ export class AuthController {
     return {
       message: result.message,
       user: result.user,
+    };
+  }
+
+  @Post('logout')
+  logout(@Res({ passthrough: true }) res: Response) {
+    res.clearCookie('access_token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+    });
+
+    return {
+      message: 'Logout successful',
     };
   }
 }
