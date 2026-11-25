@@ -27,3 +27,8 @@ export type Goal = Prisma.GoalModel
  * 
  */
 export type User = Prisma.UserModel
+/**
+ * Model Task
+ * 
+ */
+export type Task = Prisma.TaskModel
