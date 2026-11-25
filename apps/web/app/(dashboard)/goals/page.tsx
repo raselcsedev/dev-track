@@ -1,6 +1,5 @@
 "use client";
-
-import { useEffect, useState, FormEvent } from "react";
+import { useEffect, useState, useCallback, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import {
   getGoals,
@@ -9,6 +8,8 @@ import {
   deleteGoal,
   Goal,
   CreateGoalPayload,
+  GoalsMeta,
+  GetGoalsParams,
 } from "@/lib/api/goals";
 
 export default function GoalsPage() {
@@ -23,20 +24,38 @@ export default function GoalsPage() {
   const [deletingGoalId, setDeletingGoalId] = useState<number | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
-
+  const [search, setSearch] = useState("");
+  const [completedFilter, setCompletedFilter] = useState<
+    "all" | "completed" | "in-progress"
+  >("all");
+  const [page, setPage] = useState(1);
+  const [meta, setMeta] = useState<GoalsMeta | null>(null);
   const [formData, setFormData] = useState<CreateGoalPayload>({
     title: "",
     description: "",
   });
 
-  async function fetchGoals() {
+  const fetchGoals = useCallback(async () => {
+    setLoading(false);
+
     try {
-      const response = await getGoals({
-        page: 1,
-        limit: 10,
-      });
+      const params: GetGoalsParams = {
+        page,
+        limit: 5,
+      };
+
+      if (search.trim()) {
+        params.search = search.trim();
+      }
+
+      if (completedFilter !== "all") {
+        params.completed = completedFilter === "completed";
+      }
+
+      const response = await getGoals(params);
 
       setGoals(response.data);
+      setMeta(response.meta);
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
@@ -48,11 +67,11 @@ export default function GoalsPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [page, search, completedFilter, router]);
 
   useEffect(() => {
     fetchGoals();
-  }, []);
+  }, [fetchGoals]);
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -135,7 +154,7 @@ export default function GoalsPage() {
     }
   }
 
-  if (loading) {
+  if (loading && goals.length === 0) {
     return (
       <div className="p-8 text-center text-gray-400">Loading goals...</div>
     );
@@ -231,6 +250,54 @@ export default function GoalsPage() {
 
         {/* Goals List */}
         <section>
+          {/* Search & Filter */}
+          <div className="mb-6 grid gap-4 sm:grid-cols-2">
+            <div>
+              <label
+                htmlFor="search"
+                className="mb-2 block text-sm font-medium text-gray-300"
+              >
+                Search Goals
+              </label>
+
+              <input
+                id="search"
+                type="search"
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
+                placeholder="Search by goal title..."
+                className="w-full rounded-lg border border-gray-700 bg-gray-900 px-4 py-3 text-white outline-none focus:border-blue-500"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="status"
+                className="mb-2 block text-sm font-medium text-gray-300"
+              >
+                Filter by Status
+              </label>
+
+              <select
+                id="status"
+                value={completedFilter}
+                onChange={(e) => {
+                  setCompletedFilter(
+                    e.target.value as "all" | "completed" | "in-progress",
+                  );
+                  setPage(1);
+                }}
+                className="w-full rounded-lg border border-gray-700 bg-gray-900 px-4 py-3 text-white outline-none focus:border-blue-500"
+              >
+                <option value="all">All Goals</option>
+                <option value="completed">Completed</option>
+                <option value="in-progress">In Progress</option>
+              </select>
+            </div>
+          </div>
           <h2 className="mb-5 text-xl font-semibold">
             Your Goals ({goals.length})
           </h2>
@@ -267,15 +334,45 @@ export default function GoalsPage() {
                   </p>
                   <button
                     type="button"
+                    onClick={async () => {
+                      try {
+                        await updateGoal(goal.id, {
+                          completed: !goal.completed,
+                        });
+
+                        setGoals((prev) =>
+                          prev.map((item) =>
+                            item.id === goal.id
+                              ? { ...item, completed: !item.completed }
+                              : item,
+                          ),
+                        );
+
+                        setSuccess("Goal status updated successfully!");
+                        setError("");
+                      } catch (err) {
+                        setError(
+                          err instanceof Error
+                            ? err.message
+                            : "Failed to update goal status",
+                        );
+                      }
+                    }}
+                    className="mt-4 mr-3 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 cursor-pointer"
+                  >
+                    {goal.completed ? "Mark Incomplete" : "Mark Complete"}
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => handleEdit(goal)}
-                    className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                    className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 cursor-pointer"
                   >
                     Edit
                   </button>
                   <button
                     type="button"
                     onClick={() => handleDelete(goal.id)}
-                    className="ml-3 mt-4 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+                    className="ml-3 mt-4 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 cursor-pointer"
                   >
                     Delete
                   </button>
