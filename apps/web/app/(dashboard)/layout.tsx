@@ -35,6 +35,12 @@ export default function DashboardLayout({
             >
               Tasks
             </Link>
+            <Link
+              href="/projects"
+              className="text-sm text-gray-300 transition hover:text-white"
+            >
+              Projects
+            </Link>
 
             <LogoutButton />
           </div>
