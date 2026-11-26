@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 import LogoutButton from "@/app/components/layout/logout-button";
 
@@ -28,6 +27,13 @@ export default function DashboardLayout({
               className="text-sm text-gray-300 transition hover:text-white"
             >
               Goals
+            </Link>
+
+            <Link
+              href="/tasks"
+              className="text-sm text-gray-300 transition hover:text-white"
+            >
+              Tasks
             </Link>
 
             <LogoutButton />
