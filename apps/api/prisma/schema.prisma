@@ -1,17 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
-// generator client {
-//   provider = "prisma-client"
-//   output   = "../generated/prisma"
-// }
-
-// datasource db {
-//   provider = "mysql"
-// }
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -40,8 +26,8 @@ model User {
   email    String @unique
   password String
 
-  goals Goal[]
-  tasks Task[]
+  goals    Goal[]
+  tasks    Task[]
   projects Project[]
 
   createdAt DateTime @default(now())
@@ -49,10 +35,10 @@ model User {
 }
 
 model Task {
-  id          Int      @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   title       String
   description String?
-  completed   Boolean  @default(false)
+  completed   Boolean   @default(false)
   dueDate     DateTime?
 
   userId Int
@@ -61,11 +47,18 @@ model Task {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
 enum ProjectStatus {
   PLANNED
   IN_PROGRESS
   COMPLETED
   ON_HOLD
+}
+
+enum MilestoneStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
 }
 
 model Project {
@@ -76,9 +69,24 @@ model Project {
   progress    Int           @default(0)
   startDate   DateTime?
   endDate     DateTime?
+  milestones  Milestone[]
 
   userId Int
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Milestone {
+  id          Int             @id @default(autoincrement())
+  title       String
+  description String?
+  status      MilestoneStatus @default(PENDING)
+  dueDate     DateTime?
+
+  projectId Int
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

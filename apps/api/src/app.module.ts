@@ -27,6 +27,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TasksModule } from './tasks/tasks.module.js';
 import { ProjectsModule } from './projects/projects.module.js';
 import { DashboardModule } from './dashboard/dashboard.module.js';
+import { MilestonesModule } from './milestones/milestones.module.js';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
@@ -46,6 +47,7 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
     TasksModule,
     ProjectsModule,
     DashboardModule,
+    MilestonesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

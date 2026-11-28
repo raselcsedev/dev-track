@@ -9,21 +9,14 @@ export class ProjectsService {
 
   // Create a new project
   async create(userId: number, createProjectDto: CreateProjectDto) {
-    const {
-      title,
-      description,
-      status,
-      progress,
-      startDate,
-      endDate,
-    } = createProjectDto;
+    const { title, description, status, startDate, endDate } = createProjectDto;
 
     return this.prisma.project.create({
       data: {
         title,
         description: description ?? null,
         status,
-        progress,
+        progress: 0,
         startDate: startDate ? new Date(startDate) : null,
         endDate: endDate ? new Date(endDate) : null,
         userId,
@@ -53,11 +46,7 @@ export class ProjectsService {
   }
 
   // Update a project
-  async update(
-    id: number,
-    userId: number,
-    updateProjectDto: UpdateProjectDto,
-  ) {
+  async update(id: number, userId: number, updateProjectDto: UpdateProjectDto) {
     const existingProject = await this.prisma.project.findFirst({
       where: { id, userId },
     });

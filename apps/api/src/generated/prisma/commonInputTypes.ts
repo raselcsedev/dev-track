@@ -192,6 +192,23 @@ export type EnumProjectStatusWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumProjectStatusFilter<$PrismaModel>
 }
 
+export type EnumMilestoneStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.MilestoneStatus | Prisma.EnumMilestoneStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.MilestoneStatus[]
+  notIn?: $Enums.MilestoneStatus[]
+  not?: Prisma.NestedEnumMilestoneStatusFilter<$PrismaModel> | $Enums.MilestoneStatus
+}
+
+export type EnumMilestoneStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.MilestoneStatus | Prisma.EnumMilestoneStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.MilestoneStatus[]
+  notIn?: $Enums.MilestoneStatus[]
+  not?: Prisma.NestedEnumMilestoneStatusWithAggregatesFilter<$PrismaModel> | $Enums.MilestoneStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumMilestoneStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumMilestoneStatusFilter<$PrismaModel>
+}
+
 export type NestedIntFilter<$PrismaModel = never> = {
   equals?: number | Prisma.IntFieldRefInput<$PrismaModel>
   in?: number[]
@@ -385,6 +402,23 @@ export type NestedEnumProjectStatusWithAggregatesFilter<$PrismaModel = never> = 
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumProjectStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumProjectStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumMilestoneStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.MilestoneStatus | Prisma.EnumMilestoneStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.MilestoneStatus[]
+  notIn?: $Enums.MilestoneStatus[]
+  not?: Prisma.NestedEnumMilestoneStatusFilter<$PrismaModel> | $Enums.MilestoneStatus
+}
+
+export type NestedEnumMilestoneStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.MilestoneStatus | Prisma.EnumMilestoneStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.MilestoneStatus[]
+  notIn?: $Enums.MilestoneStatus[]
+  not?: Prisma.NestedEnumMilestoneStatusWithAggregatesFilter<$PrismaModel> | $Enums.MilestoneStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumMilestoneStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumMilestoneStatusFilter<$PrismaModel>
 }
 
 

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { FormEvent, useCallback, useEffect, useState } from "react";
@@ -10,12 +9,11 @@ import {
   ProjectStatus,
   updateProject,
 } from "@/lib/api/projects";
-
+import Link from "next/link";
 interface ProjectFormData {
   title: string;
   description: string;
   status: ProjectStatus;
-  progress: number;
   startDate: string;
   endDate: string;
 }
@@ -24,7 +22,6 @@ const initialFormData: ProjectFormData = {
   title: "",
   description: "",
   status: "PLANNED",
-  progress: 0,
   startDate: "",
   endDate: "",
 };
@@ -52,7 +49,9 @@ function toISOString(date: string) {
 }
 
 function getStatusLabel(status: ProjectStatus) {
-  return statusOptions.find((option) => option.value === status)?.label ?? status;
+  return (
+    statusOptions.find((option) => option.value === status)?.label ?? status
+  );
 }
 
 export default function ProjectsPage() {
@@ -64,7 +63,9 @@ export default function ProjectsPage() {
   const [deleting, setDeleting] = useState(false);
 
   const [editingProjectId, setEditingProjectId] = useState<number | null>(null);
-  const [deletingProjectId, setDeletingProjectId] = useState<number | null>(null);
+  const [deletingProjectId, setDeletingProjectId] = useState<number | null>(
+    null,
+  );
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -90,10 +91,7 @@ export default function ProjectsPage() {
     setEditingProjectId(null);
   }
 
-  function handleChange(
-    field: keyof ProjectFormData,
-    value: string | number,
-  ) {
+  function handleChange(field: keyof ProjectFormData, value: string | number) {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
@@ -107,7 +105,6 @@ export default function ProjectsPage() {
       title: project.title,
       description: project.description ?? "",
       status: project.status,
-      progress: project.progress,
       startDate: toLocalDate(project.startDate),
       endDate: toLocalDate(project.endDate),
     });
@@ -141,45 +138,37 @@ export default function ProjectsPage() {
     setError("");
     setSuccess("");
 
- 
-try {
-  const payload = {
-    title,
-    description: formData.description.trim(),
-    status: formData.status,
-    progress: Number(formData.progress),
-    startDate: toISOString(formData.startDate),
-    endDate: toISOString(formData.endDate),
-  };
+    try {
+      const payload = {
+        title,
+        description: formData.description.trim(),
+        status: formData.status,
+        startDate: toISOString(formData.startDate),
+        endDate: toISOString(formData.endDate),
+      };
 
-  if (editingProjectId !== null) {
-    await updateProject(editingProjectId, payload);
-    setSuccess("Project updated successfully");
-  } else {
-    await createProject({
-      title: payload.title,
-      description: payload.description,
-      status: payload.status,
-      progress: payload.progress,
-      ...(payload.startDate
-        ? { startDate: payload.startDate }
-        : {}),
-      ...(payload.endDate
-        ? { endDate: payload.endDate }
-        : {}),
-    });
+      if (editingProjectId !== null) {
+        await updateProject(editingProjectId, payload);
+        setSuccess("Project updated successfully");
+      } else {
+        await createProject({
+          title: payload.title,
+          description: payload.description,
+          status: payload.status,
+          ...(payload.startDate ? { startDate: payload.startDate } : {}),
+          ...(payload.endDate ? { endDate: payload.endDate } : {}),
+        });
 
-    setSuccess("Project created successfully");
-  }
+        setSuccess("Project created successfully");
+      }
 
-  resetForm();
-  await fetchProjects();
-} catch (err) {
-  setError(err instanceof Error ? err.message : "Something went wrong");
-} finally {
-  setSaving(false);
-}
-
+      resetForm();
+      await fetchProjects();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function handleDelete() {
@@ -309,31 +298,6 @@ try {
 
             <div>
               <label
-                htmlFor="progress"
-                className="mb-2 block text-sm text-gray-300"
-              >
-                Progress ({formData.progress}%)
-              </label>
-              <input
-                id="progress"
-                type="range"
-                min={0}
-                max={100}
-                step={1}
-                value={formData.progress}
-                onChange={(e) =>
-                  handleChange("progress", Number(e.target.value))
-                }
-                className="mt-3 w-full accent-blue-500"
-              />
-              <div className="mt-1 flex justify-between text-xs text-gray-500">
-                <span>0%</span>
-                <span>100%</span>
-              </div>
-            </div>
-
-            <div>
-              <label
                 htmlFor="startDate"
                 className="mb-2 block text-sm text-gray-300"
               >
@@ -443,11 +407,26 @@ try {
                 </div>
 
                 <div className="mb-5 space-y-1 text-xs text-gray-500">
-                  <p>Start: {project.startDate ? toLocalDate(project.startDate) : "Not set"}</p>
-                  <p>End: {project.endDate ? toLocalDate(project.endDate) : "Not set"}</p>
+                  <p>
+                    Start:{" "}
+                    {project.startDate
+                      ? toLocalDate(project.startDate)
+                      : "Not set"}
+                  </p>
+                  <p>
+                    End:{" "}
+                    {project.endDate ? toLocalDate(project.endDate) : "Not set"}
+                  </p>
                 </div>
 
                 <div className="flex gap-3 border-t border-gray-800 pt-4">
+                  <Link
+                    href={`/projects/${project.id}`}
+                    className="rounded-lg bg-gray-700 px-4 py-2 text-sm text-gray-200 transition hover:bg-gray-600"
+                  >
+                    View Details
+                  </Link>
+
                   <button
                     type="button"
                     onClick={() => handleEdit(project)}

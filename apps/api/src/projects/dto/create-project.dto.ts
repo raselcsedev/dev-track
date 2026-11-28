@@ -1,13 +1,10 @@
 import {
   IsDateString,
   IsEnum,
-  IsInt,
   IsNotEmpty,
   IsOptional,
   IsString,
-  Max,
   MaxLength,
-  Min,
 } from 'class-validator';
 
 export enum ProjectStatus {
@@ -31,12 +28,6 @@ export class CreateProjectDto {
   @IsOptional()
   @IsEnum(ProjectStatus)
   status?: ProjectStatus;
-
-  @IsOptional()
-  @IsInt()
-  @Min(0)
-  @Max(100)
-  progress?: number;
 
   @IsOptional()
   @IsDateString()

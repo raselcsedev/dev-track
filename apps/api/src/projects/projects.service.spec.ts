@@ -37,14 +37,18 @@ describe('ProjectsService', () => {
     expect(service).toBeDefined();
   });
 
-  it('should create a new project', async () => {
+  it('should create a new project with zero progress', async () => {
     const dto = {
       title: 'DevTrack Project',
       description: 'Learning NestJS',
-      progress: 40,
     };
 
-    const result = { id: 1, ...dto, userId: 2 };
+    const result = {
+      id: 1,
+      ...dto,
+      progress: 0,
+      userId: 2,
+    };
 
     mockPrismaService.project.create.mockResolvedValue(result);
 
@@ -55,7 +59,7 @@ describe('ProjectsService', () => {
         title: dto.title,
         description: dto.description,
         status: undefined,
-        progress: dto.progress,
+        progress: 0,
         startDate: null,
         endDate: null,
         userId: 2,
@@ -98,16 +102,16 @@ describe('ProjectsService', () => {
     );
   });
 
-  it('should update a project', async () => {
+  it('should update a project without changing its progress', async () => {
     const existingProject = {
       id: 1,
       title: 'Old Project',
+      progress: 50,
       userId: 2,
     };
 
     const dto = {
       title: 'Updated Project',
-      progress: 60,
     };
 
     const result = {
