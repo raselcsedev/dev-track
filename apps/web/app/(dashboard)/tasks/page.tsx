@@ -9,7 +9,9 @@ import {
   deleteTask,
   Task,
   CreateTaskPayload,
+  GetTasksParams,
 } from "@/lib/api/tasks";
+import DateTimePicker from "@/components/ui/date-time-picker";
 
 export default function TasksPage() {
   const router = useRouter();
@@ -26,6 +28,14 @@ export default function TasksPage() {
   const [deletingTaskId, setDeletingTaskId] = useState<number | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalTasks, setTotalTasks] = useState(0);
+
+  const TASKS_PER_PAGE = 5;
+
   const [formData, setFormData] = useState<CreateTaskPayload>({
     title: "",
     description: "",
@@ -34,15 +44,33 @@ export default function TasksPage() {
 
   const fetchTasks = useCallback(async () => {
     try {
-      const response = await getTasks();
-      setTasks(response);
+      const params: GetTasksParams = {
+        page: currentPage,
+        limit: TASKS_PER_PAGE,
+      };
+
+      if (search.trim()) {
+        params.search = search.trim();
+      }
+
+      if (statusFilter === "completed") {
+        params.completed = true;
+      } else if (statusFilter === "pending") {
+        params.completed = false;
+      }
+
+      const response = await getTasks(params);
+
+      setTasks(response.data);
+      setTotalTasks(response.meta.total);
+      setTotalPages(response.meta.totalPages);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load tasks");
       router.replace("/login");
     } finally {
       setLoading(false);
     }
-  }, [router]);
+  }, [router, currentPage, search, statusFilter]);
 
   useEffect(() => {
     fetchTasks();
@@ -68,29 +96,29 @@ export default function TasksPage() {
     });
   }
 
-function toLocalDateTime(date: string | null) {
-  if (!date) return "";
+  function toLocalDateTime(date: string | null) {
+    if (!date) return "";
 
-  const localDate = new Date(date);
-  const offset = localDate.getTimezoneOffset();
+    const localDate = new Date(date);
+    const offset = localDate.getTimezoneOffset();
 
-  return new Date(localDate.getTime() - offset * 60 * 1000)
-    .toISOString()
-    .slice(0, 16);
-}
+    return new Date(localDate.getTime() - offset * 60 * 1000)
+      .toISOString()
+      .slice(0, 16);
+  }
 
-function handleEdit(task: Task) {
-  setEditingTaskId(task.id);
+  function handleEdit(task: Task) {
+    setEditingTaskId(task.id);
 
-  setFormData({
-    title: task.title,
-    description: task.description ?? "",
-    dueDate: toLocalDateTime(task.dueDate),
-  });
+    setFormData({
+      title: task.title,
+      description: task.description ?? "",
+      dueDate: toLocalDateTime(task.dueDate),
+    });
 
-  setError("");
-  setSuccess("");
-}
+    setError("");
+    setSuccess("");
+  }
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -111,13 +139,19 @@ function handleEdit(task: Task) {
       if (editingTaskId !== null) {
         await updateTask(editingTaskId, payload);
         setSuccess("Task updated successfully!");
+        resetForm();
+        await fetchTasks();
       } else {
         await createTask(payload);
         setSuccess("Task created successfully!");
-      }
+        resetForm();
 
-      resetForm();
-      await fetchTasks();
+        if (currentPage !== 1) {
+          setCurrentPage(1);
+        } else {
+          await fetchTasks();
+        }
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
@@ -130,15 +164,13 @@ function handleEdit(task: Task) {
     setSuccess("");
 
     try {
-      const updatedTask = await updateTask(task.id, {
+      await updateTask(task.id, {
         completed: !task.completed,
       });
 
-      setTasks((prev) =>
-        prev.map((item) => (item.id === task.id ? updatedTask : item)),
-      );
-
       setSuccess("Task status updated successfully!");
+
+      await fetchTasks();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update task");
     }
@@ -159,11 +191,18 @@ function handleEdit(task: Task) {
     try {
       await deleteTask(deletingTaskId);
 
-      setTasks((prev) => prev.filter((task) => task.id !== deletingTaskId));
-
       setShowDeleteModal(false);
       setDeletingTaskId(null);
       setSuccess("Task deleted successfully!");
+
+      const remainingTasks = totalTasks - 1;
+      const newTotalPages = Math.ceil(remainingTasks / TASKS_PER_PAGE);
+
+      if (newTotalPages > 0 && currentPage > newTotalPages) {
+        setCurrentPage(newTotalPages);
+      } else {
+        await fetchTasks();
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete task");
     } finally {
@@ -236,7 +275,7 @@ function handleEdit(task: Task) {
               />
             </div>
 
-            <div>
+            {/*  <div>
               <label
                 htmlFor="dueDate"
                 className="mb-2 block text-sm font-medium"
@@ -252,7 +291,18 @@ function handleEdit(task: Task) {
                 onChange={handleChange}
                 className="w-full rounded-lg border border-gray-700 bg-gray-950 px-4 py-3 text-white outline-none focus:border-blue-500"
               />
-            </div>
+            </div> */}
+            <DateTimePicker
+              id="dueDate"
+              label="Due Date & Time"
+              value={formData.dueDate ?? ""}
+              onChange={(value) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  dueDate: value,
+                }))
+              }
+            />
 
             <div className="flex flex-wrap gap-3">
               <button
@@ -283,10 +333,57 @@ function handleEdit(task: Task) {
           {success && <p className="mt-4 text-sm text-green-400">{success}</p>}
         </section>
 
+        {/* Search and Filter */}
+        <section className="mb-6 rounded-xl border border-gray-800 bg-gray-900 p-5">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label
+                htmlFor="taskSearch"
+                className="mb-2 block text-sm font-medium"
+              >
+                Search Tasks
+              </label>
+              <input
+                id="taskSearch"
+                type="search"
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setCurrentPage(1);
+                }}
+                placeholder="Search by title or description..."
+                className="w-full rounded-lg border border-gray-700 bg-gray-950 px-4 py-3 outline-none focus:border-blue-500"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="taskStatus"
+                className="mb-2 block text-sm font-medium"
+              >
+                Filter by Status
+              </label>
+              <select
+                id="taskStatus"
+                value={statusFilter}
+                onChange={(e) => {
+                  setStatusFilter(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="w-full rounded-lg border border-gray-700 bg-gray-950 px-4 py-3 outline-none focus:border-blue-500"
+              >
+                <option value="all">All Tasks</option>
+                <option value="completed">Completed</option>
+                <option value="pending">Pending</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
         {/* Tasks List */}
         <section>
           <h2 className="mb-5 text-xl font-semibold">
-            Your Tasks ({tasks.length})
+            Your Tasks ({totalTasks})
           </h2>
 
           {tasks.length === 0 ? (
@@ -312,7 +409,7 @@ function handleEdit(task: Task) {
                           : "bg-yellow-500/10 text-yellow-400"
                       }`}
                     >
-                      {task.completed ? "Completed" : "In Progress"}
+                      {task.completed ? "Completed" : "Pending"}
                     </span>
                   </div>
 
@@ -355,6 +452,39 @@ function handleEdit(task: Task) {
                   </p>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Pagination */}
+          {totalPages > 0 && (
+            <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
+              <p className="text-sm text-gray-400">
+                Showing {tasks.length} of {totalTasks} tasks
+              </p>
+
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  disabled={currentPage <= 1 || loading}
+                  onClick={() => setCurrentPage((prev) => prev - 1)}
+                  className="rounded-lg bg-gray-700 px-4 py-2 text-sm hover:bg-gray-600 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Previous
+                </button>
+
+                <span className="text-sm text-gray-300">
+                  Page {currentPage} of {totalPages}
+                </span>
+
+                <button
+                  type="button"
+                  disabled={currentPage >= totalPages || loading}
+                  onClick={() => setCurrentPage((prev) => prev + 1)}
+                  className="rounded-lg bg-gray-700 px-4 py-2 text-sm hover:bg-gray-600 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Next
+                </button>
+              </div>
             </div>
           )}
         </section>

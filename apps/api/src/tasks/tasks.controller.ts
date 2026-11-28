@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { TasksService } from './tasks.service.js';
@@ -14,6 +15,7 @@ import { CreateTaskDto } from './dto/create-task.dto.js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { CurrentUser } from '../common/decorators/current-user.decorator.js';
 import { UpdateTaskDto } from './dto/update-task.dto.js';
+import { GetTasksQueryDto } from './dto/get-tasks-query.dto.js';
 
 @Controller('tasks')
 @UseGuards(JwtAuthGuard)
@@ -21,8 +23,11 @@ export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @Get()
-  findAll(@CurrentUser('userId') userId: number) {
-    return this.tasksService.findAll(userId);
+  findAll(
+    @CurrentUser('userId') userId: number,
+    @Query() query: GetTasksQueryDto,
+  ) {
+    return this.tasksService.findAll(userId, query);
   }
 
   @Get(':id')

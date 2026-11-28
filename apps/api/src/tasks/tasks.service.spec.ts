@@ -1,4 +1,3 @@
-
 import { Test, TestingModule } from '@nestjs/testing';
 import { TasksService } from './tasks.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -13,6 +12,7 @@ describe('TasksService', () => {
       findFirst: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
+      count: vi.fn(),
     },
   };
 
@@ -74,8 +74,12 @@ describe('TasksService', () => {
   });
 
   describe('findAll', () => {
-    it('should return all tasks belonging to a user', async () => {
+    it('should return paginated tasks belonging to a user', async () => {
       const userId = 2;
+      const query = {
+        page: 1,
+        limit: 10,
+      };
 
       const mockTasks = [
         {
@@ -91,19 +95,80 @@ describe('TasksService', () => {
       ];
 
       prismaMock.task.findMany.mockResolvedValue(mockTasks);
+      prismaMock.task.count.mockResolvedValue(1);
 
-      const result = await service.findAll(userId);
+      const result = await service.findAll(userId, query);
+
+      expect(prismaMock.task.findMany).toHaveBeenCalledWith({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+        skip: 0,
+        take: 10,
+      });
+
+      expect(prismaMock.task.count).toHaveBeenCalledWith({
+        where: { userId },
+      });
+
+      expect(result).toEqual({
+        data: mockTasks,
+        meta: {
+          total: 1,
+          page: 1,
+          limit: 10,
+          totalPages: 1,
+        },
+      });
+    });
+    it('should filter tasks by search term', async () => {
+      const userId = 2;
+      const query = {
+        search: 'NestJS',
+        page: 1,
+        limit: 10,
+      };
+
+      prismaMock.task.findMany.mockResolvedValue([]);
+      prismaMock.task.count.mockResolvedValue(0);
+
+      await service.findAll(userId, query);
 
       expect(prismaMock.task.findMany).toHaveBeenCalledWith({
         where: {
           userId,
+          OR: [
+            { title: { contains: 'NestJS' } },
+            { description: { contains: 'NestJS' } },
+          ],
         },
-        orderBy: {
-          createdAt: 'desc',
-        },
+        orderBy: { createdAt: 'desc' },
+        skip: 0,
+        take: 10,
       });
+    });
 
-      expect(result).toEqual(mockTasks);
+    it('should filter tasks by completed status', async () => {
+      const userId = 2;
+      const query = {
+        completed: true,
+        page: 1,
+        limit: 10,
+      };
+
+      prismaMock.task.findMany.mockResolvedValue([]);
+      prismaMock.task.count.mockResolvedValue(0);
+
+      await service.findAll(userId, query);
+
+      expect(prismaMock.task.findMany).toHaveBeenCalledWith({
+        where: {
+          userId,
+          completed: true,
+        },
+        orderBy: { createdAt: 'desc' },
+        skip: 0,
+        take: 10,
+      });
     });
   });
 
@@ -137,9 +202,7 @@ describe('TasksService', () => {
     it('should throw NotFoundException when task does not exist', async () => {
       prismaMock.task.findFirst.mockResolvedValue(null);
 
-      await expect(service.findOne(999, 2)).rejects.toThrow(
-        'Task not found',
-      );
+      await expect(service.findOne(999, 2)).rejects.toThrow('Task not found');
     });
   });
 
@@ -236,9 +299,7 @@ describe('TasksService', () => {
     it('should throw NotFoundException when task does not exist', async () => {
       prismaMock.task.findFirst.mockResolvedValue(null);
 
-      await expect(service.remove(999, 2)).rejects.toThrow(
-        'Task not found',
-      );
+      await expect(service.remove(999, 2)).rejects.toThrow('Task not found');
 
       expect(prismaMock.task.delete).not.toHaveBeenCalled();
     });

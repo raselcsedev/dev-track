@@ -1,4 +1,3 @@
-
 import { Test, TestingModule } from '@nestjs/testing';
 import { TasksController } from './tasks.controller.js';
 import { TasksService } from './tasks.service.js';
@@ -32,5 +31,36 @@ describe('TasksController', () => {
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
+  });
+
+  describe('findAll', () => {
+    it('should return tasks using query parameters', async () => {
+      const userId = 2;
+
+      const query = {
+        search: 'NestJS',
+        completed: true,
+        page: 1,
+        limit: 5,
+      };
+
+      const mockResponse = {
+        data: [],
+        meta: {
+          total: 0,
+          page: 1,
+          limit: 5,
+          totalPages: 0,
+        },
+      };
+
+      mockTasksService.findAll.mockResolvedValue(mockResponse);
+
+      const result = await controller.findAll(userId, query);
+
+      expect(mockTasksService.findAll).toHaveBeenCalledWith(userId, query);
+
+      expect(result).toEqual(mockResponse);
+    });
   });
 });
