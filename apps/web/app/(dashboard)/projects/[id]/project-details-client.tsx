@@ -278,7 +278,7 @@ export default function ProjectDetailsClient({
       <section className="mb-8 rounded-xl border border-gray-800 bg-gray-900 p-6">
         <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h1 className="break-words text-3xl font-bold">
+            <h1 className="wrap-break-word text-3xl font-bold">
               {project.title}
             </h1>
 
@@ -496,7 +496,7 @@ export default function ProjectDetailsClient({
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
-                    <h3 className="break-words text-lg font-semibold">
+                    <h3 className="wrap-break-word text-lg font-semibold">
                       {milestone.title}
                     </h3>
 
